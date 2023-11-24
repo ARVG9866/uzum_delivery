@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package delivery;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/Shemistan/uzum_delivery/pkg/delivery_v1;delivery_v1";
+
+service DeliveryV1 {
+    rpc AddOrderForDelivery(AddOrderForDelivery.Request) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/delivery/v1/order/add"
+        };
+    };
+
+    rpc GetAllOrdersForDelivery(GetAllOrdersForDelivery.Request) returns (GetAllOrdersForDelivery.Response) {
+        option (google.api.http) = {
+            post: "/shop/v1/order/get_all"
+        };
+    };
+
+    rpc GiveOrderForDelivery(GiveOrderForDelivery.Request) returns (GiveOrderForDelivery.Response) {
+        option (google.api.http) = {
+            put: "/shop/v1/order/give"
+            body: "*"
+        };
+    };
+
+    rpc CloseOrderForDelivery(CloseOrderForDelivery.Request) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/shop/v1/order/close"
+            body: "*"
+        };
+    };
+
+    rpc Healthz(google.protobuf.Empty) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+          get: "/shop/v1/healthz"
+        };
+      }
+}
+
+message AddOrderForDelivery {
+    message Request {
+        Order order = 1;
+    }
+
+}
+
+message GetAllOrdersForDelivery {
+    message Request {
+        Coordinate courierCoordinate = 1;
+    }
+
+    message Response {
+        repeated GetOrder orders = 1;
+    }
+}
+
+message GiveOrderForDelivery {
+    message Request {
+        int64 order_id = 1;
+    }
+
+    message Response {
+        Order order = 1;
+    }
+}
+
+message CloseOrderForDelivery {
+    message Request {
+        int64 order_id = 1;
+    }
+}
+
+message Order {
+    int64 id = 1;
+    string order_name = 2;
+    string user_name = 3;
+    string user_phone = 4;
+    string address = 5;
+    Coordinate coordinate_address = 6 [json_name = "coordinate_address"];
+    Coordinate coordinate_opp = 7 [json_name = "coordinate_opp"];
+    string meta = 8;
+    string status = 9;
+}
+
+message GetOrder {
+    int64 order_id = 1;
+    float distance = 2;
+}
+
+message Coordinate {
+    float x = 1;
+    float y = 2;
+}

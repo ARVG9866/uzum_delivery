@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/Shemistan/uzum_delivery/cmd/api/handlers"
-	"github.com/Shemistan/uzum_delivery/internal/service"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/Shemistan/uzum_delivery/cmd/api/handlers"
+	service "github.com/Shemistan/uzum_delivery/internal/service/delivery_v1"
+	"github.com/gorilla/mux"
 )
 
 const (
