@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/Shemistan/uzum_delivery/internal/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -35,21 +36,30 @@ func NewStorage(db *sqlx.DB) IStorage {
 
 func (s *storage) CreateOrder(ctx context.Context, order *models.Order) error {
 	str_query := fmt.Sprintf(`INSERT INTO %s (
-		id, 
 		order_name, 
 		user_name, 
 		phone, 
 		address, 
 		coordinate_address_x, 
 		coordinate_address_y,
-		coordinate_oop_x, 
-		coordinate_oop_y, 
+		coordinate_opp_x, 
+		coordinate_opp_y, 
 		meta, 
 		status
 	) 
-	VALUES(%d, %s, %s, %s, %s, %f, %f, %f, %f, %s, %s)`,
+	VALUES(
+		'%s',
+		'%s',
+		'%s', 
+		'%s', 
+		%f, 
+		%f, 
+		%f, 
+		%f, 
+		'%s', 
+		'%s'
+	);`,
 		orderTable,
-		order.ID,
 		order.OrderName,
 		order.UserName,
 		order.Phone,
@@ -76,11 +86,11 @@ func (s *storage) GetOrdersForDelivery(ctx context.Context, courier_coordinate *
 
 	str_query := fmt.Sprintf(
 		`SELECT
-			order_id,  
-			ROUND(SQRT(POWER(%f - coordinate_oop_x, 2) + POWER(%f - coordinate_oop_y, 2)) +
+			id,  
+			ROUND(SQRT(POWER(%f - coordinate_opp_x, 2) + POWER(%f - coordinate_opp_y, 2)) +
 				SQRT(POWER(coordinate_address_x - %f, 2) + POWER(coordinate_address_y - %f, 2)), 2) AS distance
 		FROM %s 
-		WHERE status = %s 
+		WHERE status = '%s' 
 		ORDER BY 1 
 		LIMIT 5;`,
 		courier_coordinate.X, courier_coordinate.Y, courier_coordinate.X, courier_coordinate.Y, orderTable, status1)
@@ -108,15 +118,43 @@ func (s *storage) GetOrdersForDelivery(ctx context.Context, courier_coordinate *
 
 func (s *storage) GiveOrderToCourier(ctx context.Context, order_id int64, courier_id int64) (*models.Order, error) {
 	var order models.Order
+	order.Coordinate_address = &models.Coordinate{}
+	order.Coordinate_opp = &models.Coordinate{}
 
 	err := s.updateOrderStatus2(ctx, order_id, courier_id)
 	if err != nil {
 		return nil, err
 	}
 
-	str_query := fmt.Sprintf(`SELECT * FROM %s WHERE id=%d`, orderTable, order_id)
+	str_query := fmt.Sprintf(`SELECT 
+		id,
+		order_name,
+		user_name,
+		phone,
+		address,
+		coordinate_address_x,
+		coordinate_address_y,
+		coordinate_opp_x,
+		coordinate_opp_y,
+		meta,
+		courier_id,
+		status
+	FROM %s WHERE id=%d`, orderTable, order_id)
 
-	err = s.db.QueryRowxContext(ctx, str_query).StructScan(&order)
+	err = s.db.QueryRowContext(ctx, str_query).Scan(
+		&order.ID,
+		&order.OrderName,
+		&order.UserName,
+		&order.Phone,
+		&order.Address,
+		&order.Coordinate_address.X,
+		&order.Coordinate_address.Y,
+		&order.Coordinate_opp.X,
+		&order.Coordinate_opp.Y,
+		&order.Meta,
+		&order.Courier_id,
+		&order.Status,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +166,7 @@ func (s *storage) UpdateOrderStatus(ctx context.Context, order_id int64) error {
 	today := time.Now()
 
 	var rtn int64
-	str_query := fmt.Sprintf(`SELECT id FROM %s WHERE id=%d AND status=%s`, orderTable, order_id, status2)
+	str_query := fmt.Sprintf(`SELECT id FROM %s WHERE id=%d AND status='%s'`, orderTable, order_id, status2)
 	err := s.db.QueryRowContext(ctx, str_query).Scan(&rtn)
 	if err != nil {
 		return err
@@ -137,8 +175,17 @@ func (s *storage) UpdateOrderStatus(ctx context.Context, order_id int64) error {
 		return errors.New("Order not found or status is not correct")
 	}
 
-	str_query = fmt.Sprintf(`UPDATE %s SET status=%s, delivery_at=%s WHERE id=%d`, orderTable, status3, today, order_id)
-	_, err = s.db.ExecContext(ctx, str_query)
+	query := squirrel.Update(orderTable).SetMap(map[string]interface{}{
+		"status":      status3,
+		"delivery_at": today,
+	}).
+		Where(squirrel.Eq{"id": order_id}).
+		RunWith(s.db).
+		PlaceholderFormat(squirrel.Dollar)
+
+	_, err = query.ExecContext(ctx)
+	// str_query = fmt.Sprintf(`UPDATE %s SET status='%s', delivery_at='%s' WHERE id=%d`, orderTable, status3, today, order_id)
+	// _, err = s.db.ExecContext(ctx, str_query)
 	if err != nil {
 		return err
 	}
@@ -147,7 +194,7 @@ func (s *storage) UpdateOrderStatus(ctx context.Context, order_id int64) error {
 }
 
 func (s *storage) updateOrderStatus2(ctx context.Context, order_id int64, courier_id int64) error {
-	str_query := fmt.Sprintf("UPDATE %s SET status=%s, courier_id=%d WHERE id=%d", orderTable, status2, courier_id, order_id)
+	str_query := fmt.Sprintf("UPDATE %s SET status='%s', courier_id=%d WHERE id=%d", orderTable, status2, courier_id, order_id)
 
 	_, err := s.db.ExecContext(ctx, str_query)
 	if err != nil {

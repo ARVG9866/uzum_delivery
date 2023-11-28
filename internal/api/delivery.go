@@ -49,6 +49,7 @@ func (d *Delivery) GetAllOrdersForDelivery(ctx context.Context, req *pb.GetAllOr
 
 	return rtn, nil
 }
+
 func (d *Delivery) GiveOrderForDelivery(ctx context.Context, req *pb.GiveOrderForDelivery_Request) (*pb.GiveOrderForDelivery_Response, error) {
 	err := req.Validate()
 	if err != nil {

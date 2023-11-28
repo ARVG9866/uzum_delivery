@@ -36,75 +36,12 @@
         },
         "parameters": [
           {
-            "name": "order.id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "order.orderName",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "order.userName",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "order.userPhone",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "order.address",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "order.coordinate_address.x",
-            "in": "query",
-            "required": false,
-            "type": "number",
-            "format": "float"
-          },
-          {
-            "name": "order.coordinate_address.y",
-            "in": "query",
-            "required": false,
-            "type": "number",
-            "format": "float"
-          },
-          {
-            "name": "order.coordinate_opp.x",
-            "in": "query",
-            "required": false,
-            "type": "number",
-            "format": "float"
-          },
-          {
-            "name": "order.coordinate_opp.y",
-            "in": "query",
-            "required": false,
-            "type": "number",
-            "format": "float"
-          },
-          {
-            "name": "order.meta",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "order.status",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/deliveryAddOrderForDeliveryRequest"
+            }
           }
         ],
         "tags": [
@@ -187,18 +124,12 @@
         },
         "parameters": [
           {
-            "name": "courierCoordinate.x",
-            "in": "query",
-            "required": false,
-            "type": "number",
-            "format": "float"
-          },
-          {
-            "name": "courierCoordinate.y",
-            "in": "query",
-            "required": false,
-            "type": "number",
-            "format": "float"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/deliveryGetAllOrdersForDeliveryRequest"
+            }
           }
         ],
         "tags": [
@@ -240,6 +171,14 @@
     }
   },
   "definitions": {
+    "deliveryAddOrderForDeliveryRequest": {
+      "type": "object",
+      "properties": {
+        "order": {
+          "$ref": "#/definitions/deliveryOrder"
+        }
+      }
+    },
     "deliveryCloseOrderForDeliveryRequest": {
       "type": "object",
       "properties": {
@@ -259,6 +198,14 @@
         "y": {
           "type": "number",
           "format": "float"
+        }
+      }
+    },
+    "deliveryGetAllOrdersForDeliveryRequest": {
+      "type": "object",
+      "properties": {
+        "courierCoordinate": {
+          "$ref": "#/definitions/deliveryCoordinate"
         }
       }
     },

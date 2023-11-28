@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package login_v1;
+
+import "google/api/validate.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/Shemistan/uzum_auth/pkg/login_v1;login_v1";
+
+service LoginV1{
+  rpc Login (Login.Request) returns (Login.Response);
+  rpc GetRefreshToken (GetRefreshToken.Request) returns (GetRefreshToken.Response);
+  rpc GetAccessToken (GetAccessToken.Request) returns (GetAccessToken.Response);
+  rpc Check(Check.Request) returns (Check.Response);
+}
+
+message Login {
+  message Request{
+    string login = 1 [(validate.rules).string.email = true];
+    string password = 2 [(validate.rules).string.min_len = 4];
+  }
+
+  message Response {
+    string refresh_token = 1;
+    string access_token = 2;
+  }
+}
+
+message GetRefreshToken {
+  message Request{
+    string refresh_token = 1;
+  }
+
+  message Response {
+    string refresh_token = 1;
+  }
+}
+
+message GetAccessToken {
+  message Request{
+    string refresh_token = 1;
+  }
+
+  message Response {
+    string access_token = 2;
+  }
+}
+
+message Check {
+  message Request{
+    string endpoint_address = 1;
+  }
+
+  message Response {
+    int64 user_id = 1;
+  }
+}
+
+message AuthUser {
+  string login = 1 [(validate.rules).string.email = true];
+  string password = 2 [(validate.rules).string = {min_len: 4, max_len: 40}];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
