@@ -39,6 +39,13 @@ service DeliveryV1 {
         };
     };
 
+    rpc Login(Login.Request) returns (Login.Response){
+        option (google.api.http) = {
+          post: "/shop/v1/order/login"
+          body: "*"
+        };
+      }
+
     rpc Healthz(google.protobuf.Empty) returns (google.protobuf.Empty){
         option (google.api.http) = {
           get: "/shop/v1/healthz"
@@ -99,4 +106,16 @@ message GetOrder {
 message Coordinate {
     float x = 1;
     float y = 2;
+}
+
+message Login {
+    message Request{
+        string login = 1 [(validate.rules).string.email = true];
+        string password = 2 [(validate.rules).string.min_len = 4];
+      }
+    
+      message Response {
+        string refresh_token = 1;
+        string access_token = 2;
+      }
 }

@@ -6,9 +6,10 @@ type Config struct {
 }
 
 type APP struct {
-	PortGRPC string `envconfig:"PORT_GRPC"`
-	PortHTTP string `envconfig:"PORT_HTTP"`
-	PortDocs string `envconfig:"PORT_DOCS"`
+	PortGRPC   string `envconfig:"PORT_GRPC"`
+	PortHTTP   string `envconfig:"PORT_HTTP"`
+	PortDocs   string `envconfig:"PORT_DOCS"`
+	AuthClient string `envconfig:"AUTH_CLIENT"`
 }
 
 type Postgres struct {

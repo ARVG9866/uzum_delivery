@@ -33,3 +33,8 @@ type OrderList struct {
 	ID       int64   `json:"id"`
 	Distance float32 `json:"distance"`
 }
+
+type Token struct {
+	Access  string
+	Refresh string
+}

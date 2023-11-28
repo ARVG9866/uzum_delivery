@@ -47,3 +47,12 @@ gen:
 			--openapiv2_out=allow_merge=true,merge_file_name=api_delivery_v1:docs \
 			--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2.exe \
 			api/delivery_v1/delivery.proto
+
+gen_login:
+		protoc 	--proto_path=api/login_v1 \
+				--proto_path=proto \
+				--go_out=pkg/login_v1 --go_opt=paths=source_relative \
+				--plugin=protoc-gen-go=bin/protoc-gen-go.exe \
+				--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc.exe \
+				--go-grpc_out=pkg/login_v1 --go-grpc_opt=paths=source_relative \
+				api/login_v1/login.proto

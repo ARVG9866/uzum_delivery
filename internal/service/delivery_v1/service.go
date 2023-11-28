@@ -2,9 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 
+	"github.com/Shemistan/uzum_delivery/internal/convert"
 	"github.com/Shemistan/uzum_delivery/internal/models"
 	"github.com/Shemistan/uzum_delivery/internal/storage"
+	pb_login "github.com/Shemistan/uzum_delivery/pkg/login_v1"
+	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -18,16 +22,19 @@ type IService interface {
 	GetOrderListForDelivery(context.Context, *models.Coordinate) ([]*models.OrderList, error)
 	GiveOrderForDelivery(context.Context, int64) (*models.Order, error)
 	CloseOrder(context.Context, int64) error
+	Login(ctx context.Context, login string, password string) (*models.Token, error)
 }
 
-func NewService(storage storage.IStorage) IService {
+func NewService(storage storage.IStorage, loginClient pb_login.LoginV1Client) IService {
 	return &service{
-		storage: storage,
+		storage:     storage,
+		loginClient: loginClient,
 	}
 }
 
 type service struct {
-	storage storage.IStorage
+	storage     storage.IStorage
+	loginClient pb_login.LoginV1Client
 }
 
 func (s *service) CreateDeliveryOrder(ctx context.Context, order *models.Order) error {
@@ -51,7 +58,12 @@ func (s *service) GetOrderListForDelivery(ctx context.Context, coordinate *model
 }
 
 func (s *service) GiveOrderForDelivery(ctx context.Context, order_id int64) (*models.Order, error) {
-	res, err := s.storage.GiveOrderToCourier(ctx, order_id, getCourier_id())
+	user_id, err := s.GetUserFromToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.storage.GiveOrderToCourier(ctx, order_id, user_id)
 	if err != nil {
 		return nil, err
 	}
@@ -65,6 +77,26 @@ func (s *service) CloseOrder(ctx context.Context, order_id int64) error {
 	return err
 }
 
-func getCourier_id() int64 {
-	return 1
+func (s *service) Login(ctx context.Context, login string, password string) (*models.Token, error) {
+	req := &pb_login.Login_Request{Login: login, Password: password}
+	auth, err := s.loginClient.Login(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return convert.GetToken(auth), nil
+}
+
+func (s *service) GetUserFromToken(ctx context.Context) (int64, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return 0, errors.New("Can't get context")
+	}
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	check, err := s.loginClient.Check(ctx, &pb_login.Check_Request{EndpointAddress: ""})
+	if err != nil {
+		return 0, err
+	}
+
+	return check.UserId, nil
 }

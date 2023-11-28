@@ -168,6 +168,38 @@
           "DeliveryV1"
         ]
       }
+    },
+    "/shop/v1/order/login": {
+      "post": {
+        "operationId": "DeliveryV1_Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/deliveryLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/deliveryLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DeliveryV1"
+        ]
+      }
     }
   },
   "definitions": {
@@ -248,6 +280,28 @@
       "properties": {
         "order": {
           "$ref": "#/definitions/deliveryOrder"
+        }
+      }
+    },
+    "deliveryLoginRequest": {
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "deliveryLoginResponse": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "type": "string"
+        },
+        "accessToken": {
+          "type": "string"
         }
       }
     },

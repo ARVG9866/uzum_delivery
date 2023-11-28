@@ -10,11 +10,13 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/mvrilo/go-redoc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/Shemistan/uzum_delivery/dev"
 	"github.com/Shemistan/uzum_delivery/internal/models"
 	delivery_v1 "github.com/Shemistan/uzum_delivery/internal/service/delivery_v1"
 	rep "github.com/Shemistan/uzum_delivery/internal/storage"
+	pb_login "github.com/Shemistan/uzum_delivery/pkg/login_v1"
 )
 
 type App struct {
@@ -58,8 +60,15 @@ func (a *App) setConfig() {
 func (a *App) getService() delivery_v1.IService {
 	storage := rep.NewStorage(a.db)
 
+	conn, err := grpc.Dial(a.appConfig.App.AuthClient, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to connect to server: %v", err)
+	}
+
+	loginClient := pb_login.NewLoginV1Client(conn)
+
 	if a.deliveryService == nil {
-		a.deliveryService = delivery_v1.NewService(storage)
+		a.deliveryService = delivery_v1.NewService(storage, loginClient)
 
 	}
 	return a.deliveryService

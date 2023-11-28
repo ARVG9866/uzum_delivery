@@ -78,3 +78,15 @@ func (d *Delivery) CloseOrderForDelivery(ctx context.Context, req *pb.CloseOrder
 
 	return &emptypb.Empty{}, err
 }
+
+func (d *Delivery) Login(ctx context.Context, req *pb.Login_Request) (*pb.Login_Response, error) {
+	res, err := d.DeliveryService.Login(ctx, req.Login, req.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Login_Response{
+		RefreshToken: res.Refresh,
+		AccessToken:  res.Access,
+	}, nil
+}

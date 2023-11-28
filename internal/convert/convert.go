@@ -3,6 +3,7 @@ package convert
 import (
 	"github.com/Shemistan/uzum_delivery/internal/models"
 	pb "github.com/Shemistan/uzum_delivery/pkg/delivery_v1"
+	pb_login "github.com/Shemistan/uzum_delivery/pkg/login_v1"
 )
 
 func PbToModelOrder(order *pb.Order) *models.Order {
@@ -55,5 +56,12 @@ func ModelToPbOrder(order *models.Order) *pb.Order {
 		},
 		Meta:   order.Meta,
 		Status: order.Status,
+	}
+}
+
+func GetToken(auth *pb_login.Login_Response) *models.Token {
+	return &models.Token{
+		Refresh: auth.RefreshToken,
+		Access:  auth.AccessToken,
 	}
 }
