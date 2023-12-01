@@ -9,8 +9,8 @@ app_run:
 	docker-compose -f docker-compose.yaml down -v
 	docker-compose -f docker-compose.yaml up -d db
 	sleep 15
-	docker-compose -f docker-compose.yaml up -d init
-	docker-compose -f docker-compose.yaml up -d migrate
+#	docker-compose -f docker-compose.yaml up -d init
+#	docker-compose -f docker-compose.yaml up -d migrate
 	docker-compose -f docker-compose.yaml up -d uzum_delivery
 #	docker-compose -f docker-compose.yaml up -d zookeeper
 #	docker-compose -f docker-compose.yaml up -d kafka

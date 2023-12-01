@@ -4,7 +4,7 @@ COPY . /app/
 WORKDIR /app
 
 RUN go mod download
-RUN go build -o /bin/uzum_delivery_service ./cmd/api/main.go
+RUN go build -o /bin/uzum_delivery_service ./cmd/main.go
 
 FROM alpine:latest
 
